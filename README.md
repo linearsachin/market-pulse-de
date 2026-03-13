@@ -1,38 +1,36 @@
-# 🛰️ Nexus | Cognitive Market Intelligence
+# 🛰️ Nexus | Market Pulse Data Engineering Terminal
 
-**Nexus** is a high-fidelity, real-time financial intelligence terminal designed to synthesize raw market data into actionable cognitive insights. Optimized for 2026 standards, it merges live price action from **Finnhub.io** with neural sentiment analysis via **Gemini-3-Flash**.
+A real-time, end-to-end data engineering pipeline and intelligence terminal. This project demonstrates a **Modern Data Stack (MDS)** approach to financial analytics, combining high-frequency ingestion, dbt transformations, and a cognitive analytical dashboard.
 
 ![System Status](https://img.shields.io/badge/System_Status-Stable-00FFA3?style=for-the-badge)
-![Engine](https://img.shields.io/badge/Neural_Engine-v3.4-58A6FF?style=for-the-badge)
 ![Database](https://img.shields.io/badge/Database-DuckDB-yellow?style=for-the-badge)
+![Transformation](https://img.shields.io/badge/Transform-dbt_Core-orange?style=for-the-badge)
+![UI](https://img.shields.io/badge/UI-Streamlit-FF4B4B?style=for-the-badge)
 
-## 🚀 Core Features
+## 🏗️ Architecture & Data Flow
 
-* **Neural Sentiment Mapping:** Real-time AI scoring of news headlines on a -1.0 (Panic) to +1.0 (Euphoria) index.
-* **Dynamic KPI Tracking:** Live deltas for Volume, Mood, and Risk Analysis with detailed hover-explainers.
-* **Symmetric Visual Exploration:** A balanced analytical grid featuring:
-    * **Risk Density:** Violin plots identifying volatility clusters across asset classes.
-    * **Neural Narrative Mapping:** Scatter plots correlating news frequency with sentiment impact.
-    * **Liquidity Leaders:** High-frequency trade ranking.
-* **Infrastructure Health Monitor:** Sidebar diagnostic array tracking DB latency, stream saturation, and model status.
-* **2026 Compliance:** Fully upgraded to modern UI standards, utilizing `width="stretch"` for adaptive rendering.
+The project follows a **Medallion Architecture** (Bronze → Silver → Gold) to ensure data integrity and performance:
 
-## 🏗️ Technical Stack
+1.  **Ingestion (Bronze):** Python-based streaming and news scrapers (`ingest/`) pulling raw JSON data from **Finnhub.io** into a local **DuckDB** lake.
+2.  **Transformation (Silver/Gold):** A **dbt** project (`transform/`) handles automated SQL modeling.
+    * **Staging:** Cleanses raw trades and news.
+    * **Marts:** Produces `fct_volatility_sentiment`, calculating real-time risk-adjusted volatility and neural sentiment scores.
+3.  **Visualization (Serving):** A **Streamlit** terminal (`dashboard.py`) provides a 2x2 cognitive analytical grid for pattern recognition.
 
-| Component | Technology |
-| :--- | :--- |
-| **Interface** | Streamlit (Nexus Quantum Layout) |
-| **Data Engine** | DuckDB (High-performance OLAP) |
-| **Intelligence** | Gemini-3-Flash |
-| **Data Provider** | Finnhub.io API |
-| **Visuals** | Plotly Express |
+## 📂 Project Structure
 
-## 🛠️ Installation & Setup
-
-### 1. Structure the Data Lake
-Ensure your directory includes the `data/` folder where your scraper outputs the DuckDB file:
 ```text
-nexus-terminal/
-├── app.py                 # Core UI Script
-└── data/
-    └── market_data.duckdb # Active Database
+market-pulse-de/
+├── ingest/                # Python Ingestion Layer (News & Streamer)
+├── transform/             # dbt Project (Transformation Layer)
+│   ├── models/
+│   │   ├── staging/       # SQL cleanup and casting
+│   │   └── marts/         # Analytical Fact & Dimension tables
+│   ├── dbt_project.yml    # dbt configuration
+│   └── profiles.yml       # DuckDB connection profile
+├── data/                  # DuckDB Storage (.duckdb files)
+├── dashboard.py           # Streamlit Analytical UI
+├── pipeline_manager.py    # Master Orchestration Script
+├── Makefile               # CLI entry points for the terminal
+├── config.yaml            # System configurations
+└── requirements.txt       # Environment dependencies
