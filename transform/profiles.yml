@@ -1,0 +1,6 @@
+market_pulse:
+  outputs:
+    dev:
+      type: duckdb
+      path: '../data/market_data.duckdb'
+  target: dev

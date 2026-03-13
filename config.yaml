@@ -1,0 +1,10 @@
+database_path: "data/market_data.duckdb"
+symbols:
+  - AAPL
+  - TSLA
+  - MSFT
+  - NVDA
+  - AMD
+  - BINANCE:BTCUSDT
+  - BINANCE:ETHUSDT
+  - COINBASE:SOL-USD

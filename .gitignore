@@ -1,0 +1,16 @@
+# Environments
+venv/
+.env
+.DS_Store
+
+# DuckDB Files (Avoid pushing large binary files)
+data/*.duckdb
+
+# dbt Artifacts
+transform/target/
+transform/dbt_packages/
+transform/logs/
+
+# Python
+__pycache__/
+*.pyc
