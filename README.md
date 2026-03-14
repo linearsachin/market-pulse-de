@@ -66,19 +66,19 @@ locking during ingestion and dashboard reads.
 
 ------------------------------------------------------------------------
 
-# 🛠️ Tech Stack
+## 🛠️ Tech Stack
 
-  Layer             Technology
-  ----------------- ------------------------------------
-  Language          Python 3.10+
-  Streaming         Finnhub WebSocket API
-  News Data         Finnhub REST API
-  Database          DuckDB
-  Transformations   dbt-core
-  NLP               HuggingFace Transformers (FinBERT)
-  ML Framework      PyTorch
-  Visualization     Streamlit + Plotly
-  Orchestration     Makefile
+| Layer | Technology |
+|------|-------------|
+| Language | Python 3.10+ |
+| Streaming | Finnhub WebSocket API |
+| News Data | Finnhub REST API |
+| Database | DuckDB |
+| Transformations | dbt-core |
+| NLP | HuggingFace Transformers (FinBERT) |
+| ML Framework | PyTorch |
+| Visualization | Streamlit + Plotly |
+| Orchestration | Makefile |
 
 ------------------------------------------------------------------------
 
