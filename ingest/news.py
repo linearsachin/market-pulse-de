@@ -1,19 +1,47 @@
 import finnhub
 import os
 import pandas as pd
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 from utils import get_db, logger, get_config
 
-# Setup
+# --- NEURAL ENGINE SETUP ---
+# We use ProsusAI/finbert - the industry standard for financial sentiment
+MODEL_NAME = "ProsusAI/finbert"
+logger.info(f"🧠 Loading Neural Engine: {MODEL_NAME}...")
+
+# Load tokenizer and model
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
+# Initialize the pipeline
+nlp = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+
+# Finnhub Setup
 client = finnhub.Client(api_key=os.getenv('FINNHUB_API_KEY'))
-analyzer = SentimentIntensityAnalyzer()
 config = get_config()
 
+def get_finbert_score(text):
+    """
+    Translates FinBERT's labels into a float between -1.0 and 1.0.
+    Labels: 'positive', 'negative', 'neutral'
+    """
+    try:
+        # FinBERT has a 512 token limit; we truncate just in case
+        result = nlp(text[:512])[0]
+        label = result['label']
+        confidence = result['score']
+
+        if label == 'positive':
+            return confidence
+        elif label == 'negative':
+            return -confidence
+        else:
+            return 0.0  # Neutral
+    except Exception as e:
+        logger.error(f"Sentiment Error: {e}")
+        return 0.0
+
 def fetch_news():
-    """
-    Pulls from 4 categories but only pushes 3 columns (symbol, sentiment, ts)
-    to match the existing 'bronze_news' schema.
-    """
     categories = ['general', 'crypto', 'forex', 'merger']
     target_symbols = config.get('symbols', [])
     processed_news = []
@@ -27,21 +55,22 @@ def fetch_news():
                 headline = n.get('headline', '')
                 if not headline: continue
                 
-                # Match symbol from config or use category as fallback
+                # Logic to match symbols
                 matched_symbol = 'MARKET'
                 for s in target_symbols:
                     if s.lower() in headline.lower():
                         matched_symbol = s.upper()
                         break
                 
-                # Fallback for empty matches in specific feeds
                 if matched_symbol == 'MARKET' and cat != 'general':
                     matched_symbol = cat.upper()
 
-                # ONLY 3 COLUMNS: symbol, sentiment, ts
+                # Process with FinBERT instead of VADER
+                sentiment_score = get_finbert_score(headline)
+
                 processed_news.append({
                     'symbol': matched_symbol,
-                    'sentiment': analyzer.polarity_scores(headline)['compound'],
+                    'sentiment': sentiment_score,
                     'ts': n.get('datetime')
                 })
 
@@ -49,17 +78,13 @@ def fetch_news():
             logger.warning("No news found across categories.")
             return
 
-        # Create DataFrame
         df = pd.DataFrame(processed_news)
         
         with get_db() as con:
-            # Ensure table exists (3 columns)
             con.execute("CREATE TABLE IF NOT EXISTS bronze_news (symbol VARCHAR, sentiment FLOAT, ts BIGINT)")
-            
-            # Append the 3 columns
             con.append("bronze_news", df)
             
-        logger.info(f"✅ Ingested {len(df)} items to Bronze (3-column schema)")
+        logger.info(f"✅ Ingested {len(df)} items using FinBERT Neural Engine.")
 
     except Exception as e:
         logger.error(f"❌ News Ingestion Error: {e}")

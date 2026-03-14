@@ -56,16 +56,7 @@ with st.sidebar:
         st.write(f"**Source**: `Finnhub Cloud API` ✅")
         st.write(f"**Database**: `DuckDB v1.1.0` ✅")
         st.write(f"**Ping**: `{np.random.randint(8, 18)}ms` (Stable)")
-        st.write(f"**Intelligence**: `Gemini-3-Flash` ✅")
-
-    st.divider()
-    
-    st.write("📈 **Stream Saturation**")
-    st.progress(92, text="Throughput: Optimized")
-    
-    st.write("🧠 **Cognitive Load**")
-    st.progress(45, text="Neural Processing: Idle")
-    
+        
     st.divider()
     st.caption("Market data provided by [Finnhub.io](https://finnhub.io)")
     st.caption(f"Sync: {time.strftime('%H:%M:%S')} UTC")
